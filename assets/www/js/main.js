@@ -38,7 +38,6 @@ function getEntries() {
         tx.executeSql("select id, title, body, updated from notes order by updated desc",[],renderEntries,dbErrorHandler);
     }, dbErrorHandler);
 }
-
     
 function renderEntries(tx,results){
     doLog("render entries");
@@ -49,11 +48,21 @@ function renderEntries(tx,results){
        for(var i=0; i<results.rows.length; i++) {
          s += "<li><a href='edit.html?id="+results.rows.item(i).id + "'>" + results.rows.item(i).title + "</a></li>";   
        }
+       for (var key in localStorage){
+    	   s += "<li><a href='editlocal.html?key="+key+"'>"+ key +"</a></li>";
+    	}
        $("#noteTitleList").html(s);
        $("#noteTitleList").listview("refresh");
     }
 }
-
+function saveLocal(){
+	var key, value;
+	key = document.getElementById("noteTitle").value;
+	value = document.getElementById("noteBody").value;
+	console.log("key:"+key);
+	localStorage.setItem( key , value );
+	document.location.href="index.html";
+}
 function saveNote(note, cb) {
     //Sometimes you may want to jot down something quickly....
     if(note.title == "") note.title = "[No Title]";
@@ -105,5 +114,16 @@ function init(){
         } else {
          $("#editFormSubmitButton").removeAttr("disabled");   
         }
+    });
+    $("#editPageLocal").live("pageshow", function() {
+    	var loc = window.location.hash;
+    	//alert(window.location.hash);
+    	if(loc.indexOf("?") >= 0) {
+    		var qs = loc.substr(loc.indexOf("?")+1,loc.length);
+    		var notekey = decodeURIComponent(qs.split("=")[1]);
+//    		alert(notekey);
+    		$("#noteTitle").val(notekey);
+    		$("#noteBody").val(localStorage.getItem([notekey]));
+    }
     });
 }
